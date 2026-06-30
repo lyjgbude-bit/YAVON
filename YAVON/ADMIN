@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAVON 后台管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sidebar: '#1a1f2e',
+                        sidebarDark: '#151922',
+                        primary: '#60aeda',
+                        secondary: '#4a90e2',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+        }
+
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: linear-gradient(90deg, rgba(96, 174, 218, 0.1) 0%, transparent 100%);
+            border-left: 3px solid #60aeda;
+        }
+
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .scroll-smooth {
+            scrollbar-width: thin;
+            scrollbar-color: #60aeda #1a1f2e;
+        }
+
+        .scroll-smooth::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-track {
+            background: #1a1f2e;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-thumb {
+            background: #60aeda;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-sidebar text-white flex flex-col shadow-2xl">
+            <!-- Logo -->
+            <div class="h-16 flex items-center justify-center border-b border-white/10">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-snowflake text-primary text-2xl animate-spin" style="animation-duration: 10s;"></i>
+                    <span class="text-xl font-bold tracking-wider">YAVON</span>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 overflow-y-auto scroll-smooth py-4">
+                <div class="px-4 mb-2">
+                    <a href="#" class="sidebar-item active flex items-center space-x-3 px-4 py-3 rounded-lg">
+                        <i class="fas fa-home w-5"></i>
+                        <span>仪表盘</span>
+                    </a>
+                </div>
+
+                <div class="px-4 mb-2">
+                    <div class="sidebar-item flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-layer-group w-5"></i>
+                            <span>内容管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                    <div class="ml-4 mt-1 space-y-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">首页轮播图</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">产品管理</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">案例管理</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">新闻管理</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">关于我们</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">联系我们</a>
+                    </div>
+                </div>
+
+                <div class="px-4 mb-2">
+                    <div class="sidebar-item flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-cog w-5"></i>
+                            <span>系统管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                    <div class="ml-4 mt-1 space-y-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">管理员</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">角色管理</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">系统设置</a>
+                    </div>
+                </div>
+
+                <div class="px-4 mb-2">
+                    <div class="sidebar-item flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>数据统计</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                    <div class="ml-4 mt-1 space-y-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">访问统计</a>
+                    </div>
+                </div>
+
+                <div class="px-4 mb-2">
+                    <div class="sidebar-item flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-folder-open w-5"></i>
+                            <span>文件管理</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                    <div class="ml-4 mt-1 space-y-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">图片库</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded">文件库</a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="border-t border-white/10 p-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">管理员</p>
+                        <p class="text-xs text-gray-400">admin@yavon.com</p>
+                    </div>
+                    <button class="text-gray-400 hover:text-white">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto scroll-smooth bg-gray-50">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-8">
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-500">仪表盘</span>
+                    <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                    <span class="text-gray-800 font-medium">首页</span>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <button class="relative text-gray-500 hover:text-primary transition">
+                        <i class="fas fa-envelope text-xl"></i>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                    <button class="relative text-gray-500 hover:text-primary transition">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">5</span>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center">
+                            <i class="fas fa-user text-sm"></i>
+                        </div>
+                        <span class="text-sm font-medium">管理员</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="p-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <i class="fas fa-eye text-primary text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium flex items-center">
+                                <i class="fas fa-arrow-up mr-1"></i>12.5%
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm mb-1">浏览量（今日）</h3>
+                        <p class="text-3xl font-bold text-gray-800">1,268</p>
+                    </div>
+
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center">
+                                <i class="fas fa-users text-purple-500 text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium flex items-center">
+                                <i class="fas fa-arrow-up mr-1"></i>8.3%
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm mb-1">访客数（今日）</h3>
+                        <p class="text-3xl font-bold text-gray-800">486</p>
+                    </div>
+
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-yellow-50 flex items-center justify-center">
+                                <i class="fas fa-comments text-warning text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium flex items-center">
+                                <i class="fas fa-arrow-up mr-1"></i>6.2%
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm mb-1">询盘数（今日）</h3>
+                        <p class="text-3xl font-bold text-gray-800">32</p>
+                    </div>
+
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+                                <i class="fas fa-box text-success text-xl"></i>
+                            </div>
+                            <span class="text-gray-400 text-sm">-</span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm mb-1">产品总数</h3>
+                        <p class="text-3xl font-bold text-gray-800">128</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Chart -->
+                    <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800">访问量统计</h3>
+                            <select class="px-3 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+                                <option>近7天</option>
+                                <option>近30天</option>
+                                <option>近90天</option>
+                            </select>
+                        </div>
+                        <canvas id="visitsChart" height="300"></canvas>
+                    </div>
+
+                    <!-- Quick Actions & Recent Inquiries -->
+                    <div class="space-y-6">
+                        <!-- Quick Actions -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">快捷操作</h3>
+                            <div class="space-y-3">
+                                <button class="w-full py-3 px-4 bg-primary hover:bg-secondary text-white rounded-lg transition flex items-center justify-center space-x-2">
+                                    <i class="fas fa-plus"></i>
+                                    <span>添加产品</span>
+                                </button>
+                                <button class="w-full py-3 px-4 bg-success hover:bg-green-600 text-white rounded-lg transition flex items-center justify-center space-x-2">
+                                    <i class="fas fa-newspaper"></i>
+                                    <span>添加新闻</span>
+                                </button>
+                                <button class="w-full py-3 px-4 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition flex items-center justify-center space-x-2">
+                                    <i class="fas fa-images"></i>
+                                    <span>添加案例</span>
+                                </button>
+                                <button class="w-full py-3 px-4 bg-warning hover:bg-yellow-600 text-white rounded-lg transition flex items-center justify-center space-x-2">
+                                    <i class="fas fa-image"></i>
+                                    <span>更换首页轮播图</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Inquiries -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">最新询盘</h3>
+                                <a href="#" class="text-primary text-sm hover:underline">查看全部</a>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-start space-x-3 pb-4 border-b border-gray-100">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user text-gray-500"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <p class="text-sm font-medium text-gray-800">张先生</p>
+                                            <p class="text-xs text-gray-400">2024-05-14 14:32</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500 truncate">138****5678</p>
+                                        <p class="text-xs text-gray-400 mt-1">询问产品：智能办公桌系列</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3 pb-4 border-b border-gray-100">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user text-gray-500"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <p class="text-sm font-medium text-gray-800">李女士</p>
+                                            <p class="text-xs text-gray-400">2024-05-14 11:20</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500 truncate">135****3333</p>
+                                        <p class="text-xs text-gray-400 mt-1">询问产品：人体工学椅</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user text-gray-500"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <p class="text-sm font-medium text-gray-800">王先生</p>
+                                            <p class="text-xs text-gray-400">2024-05-14 09:15</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500 truncate">139****8888</p>
+                                        <p class="text-xs text-gray-400 mt-1">询问产品：会议桌系列</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carousel Management -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-800">首页轮播图管理</h3>
+                        <button class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>添加图片</span>
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排序</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">图片</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标题</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">链接</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <i class="fas fa-grip-vertical text-gray-400 cursor-move"></i>
+                                        <span class="ml-2 text-sm text-gray-600">1</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <img src="https://images.unsplash.com/photo-1535136029863-4a3e36f472b9?w=100&h=60&fit=crop" alt="" class="w-16 h-10 object-cover rounded">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-800">SMART GREEN SOLUTION</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-500">#</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary mr-3">编辑</button>
+                                        <button class="text-danger hover:text-red-700">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <i class="fas fa-grip-vertical text-gray-400 cursor-move"></i>
+                                        <span class="ml-2 text-sm text-gray-600">2</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <img src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=100&h=60&fit=crop" alt="" class="w-16 h-10 object-cover rounded">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-800">智能·绿色·未来</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-500">#</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary mr-3">编辑</button>
+                                        <button class="text-danger hover:text-red-700">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <i class="fas fa-grip-vertical text-gray-400 cursor-move"></i>
+                                        <span class="ml-2 text-sm text-gray-600">3</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=60&fit=crop" alt="" class="w-16 h-10 object-cover rounded">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-800">创新科技 引领未来</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-gray-500">/products</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" checked class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary mr-3">编辑</button>
+                                        <button class="text-danger hover:text-red-700">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">系统信息</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-500">系统名称：</span>
+                                <span class="text-gray-800 font-medium">YAVON 官网管理系统</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-500">当前版本：</span>
+                                <span class="text-gray-800 font-medium">v1.0.0</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-gray-500">服务器时间：</span>
+                                <span class="text-gray-800 font-medium" id="serverTime">2024-05-14 14:45:30</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">服务器环境</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-500">服务器环境：</span>
+                                <span class="text-gray-800 font-medium">Linux</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-500">PHP版本：</span>
+                                <span class="text-gray-800 font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-gray-500">数据库：</span>
+                                <span class="text-gray-800 font-medium">PostgreSQL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 py-6 px-8">
+                <p class="text-center text-gray-500 text-sm">&copy; 2024 YAVON. All rights reserved.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Initialize Chart
+        const ctx = document.getElementById('visitsChart').getContext('2d');
+        const visitsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['05-08', '05-09', '05-10', '05-11', '05-12', '05-13', '05-14'],
+                datasets: [{
+                    label: '访问量',
+                    data: [580, 720, 890, 650, 980, 1150, 850],
+                    borderColor: '#60aeda',
+                    backgroundColor: 'rgba(96, 174, 218, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#60aeda',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1500,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10,
+                            font: {
+                                family: 'Inter, Noto Sans SC',
+                                size: 11
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10,
+                            font: {
+                                family: 'Inter, Noto Sans SC',
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update server time
+        function updateServerTime() {
+            const now = new Date();
+            const timeString = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0') + ':' +
+                String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('serverTime').textContent = timeString;
+        }
+        setInterval(updateServerTime, 1000);
+        updateServerTime();
+    </script>
+</body>
+</html>
