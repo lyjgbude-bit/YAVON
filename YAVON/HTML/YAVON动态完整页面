@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品牌雅风家具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow-x: hidden; }
+        body { font-family: Arial, "Microsoft YaHei", sans-serif; background: #fff; color: #333; }
+
+        /* ========== 开场动画层样式 ========== */
+        #introAnimation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; z-index: 9999;
+            transition: opacity 1s ease-out, visibility 1s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #introAnimation.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        #introCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .intro-logo {
+            position: relative; z-index: 10; text-align: center;
+            opacity: 0; transform: scale(0.85);
+            transition: all 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .intro-logo.show { opacity: 1; transform: scale(1); }
+        .intro-logo-svg { width: 90px; height: 90px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.3)); }
+        .intro-logo-text { margin-top: 12px; color: #fff; font-size: 16px; letter-spacing: 6px; font-weight: 500; }
+
+        /* ========== 导航栏样式 ========== */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; padding: 15px 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000; background: rgba(0, 0, 0, 0.9); transition: background 0.3s; height: 70px;
+        }
+        .nav-menu { display: flex; gap: 40px; }
+        .nav-menu a {
+            color: #fff; text-decoration: none; font-size: 13px; letter-spacing: 1px;
+            transition: color 0.3s; display: flex; flex-direction: column; align-items: center; gap: 3px;
+        }
+        .nav-menu a span { font-size: 10px; color: #999; text-transform: uppercase; }
+        .nav-menu a:hover { color: #60aeda; }
+        .nav-menu a:hover span { color: #60aeda; }
+
+        /* Logo - 调整位置和大小 */
+        .logo {
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .logo-svg { width: 50px; height: 50px; transition: transform 1s ease; }
+        .logo:hover .logo-svg { transform: rotate(30deg); }
+        .logo-text { margin-top: 5px; font-size: 12px; letter-spacing: 4px; font-weight: 500; color: #fff; }
+
+        .header-icons { display: flex; gap: 20px; }
+        .header-icons svg { width: 18px; height: 18px; fill: #fff; cursor: pointer; transition: fill 0.3s; }
+        .header-icons svg:hover { fill: #60aeda; }
+
+        /* Banner区域 */
+        .banner {
+            position: relative; width: 100%; min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; align-items: center; justify-content: center; padding: 150px 60px 60px; overflow: hidden;
+        }
+        .banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1; }
+        .banner-content { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1600px; margin: 0 auto; gap: 100px; }
+        .banner-text { flex: 1; max-width: 700px; }
+        .banner-text h1 { font-size: 72px; font-weight: bold; letter-spacing: 12px; line-height: 1.3; color: #fff; margin-bottom: 30px; animation: fadeInLeft 1s ease-out; }
+        .banner-text .subtitle { font-size: 24px; letter-spacing: 10px; color: #60aeda; animation: fadeInLeft 1.5s ease-out; }
+        .banner-text .line { width: 80px; height: 3px; background: #60aeda; margin: 30px 0; animation: fadeInLeft 2s ease-out; }
+        .banner-text p { font-size: 16px; line-height: 2.2; color: rgba(255, 255, 255, 0.9); max-width: 600px; animation: fadeInLeft 2.5s ease-out; }
+
+        .bottom-features { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; gap: 100px; z-index: 10; }
+        .feature-item { display: flex; align-items: center; gap: 15px; color: #fff; transition: transform 0.3s; }
+        .feature-item:hover { transform: translateY(-5px); }
+        .feature-item svg { width: 45px; height: 45px; fill: #60aeda; }
+        .feature-item div { display: flex; flex-direction: column; }
+        .feature-item strong { font-size: 16px; letter-spacing: 2px; margin-bottom: 3px; }
+        .feature-item span { color: rgba(255, 255, 255, 0.8); font-size: 12px; }
+
+        .advantages { padding: 100px 0; background: #fff; width: 100%; }
+        .advantages-container { max-width: 1600px; margin: 0 auto; padding: 0 60px; }
+        .section-header { margin-bottom: 60px; max-width: 1000px; }
+        .section-header h2 { font-size: 36px; letter-spacing: 8px; margin-bottom: 15px; color: #000; }
+        .section-header h3 { font-size: 24px; color: #333; margin-bottom: 25px; }
+        .section-header p { font-size: 15px; line-height: 2; color: #666; max-width: 900px; }
+        .advantages-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; width: 100%; }
+        .advantage-card { position: relative; height: 550px; overflow: hidden; cursor: pointer; transition: transform 0.3s; border-radius: 8px; }
+        .advantage-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); }
+        .advantage-card-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: transform 0.5s; }
+        .advantage-card:hover .advantage-card-image { transform: scale(1.08); }
+        .advantage-card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); transition: background 0.3s; }
+        .advantage-card:hover .advantage-card-overlay { background: rgba(0, 0, 0, 0.5); }
+        .advantage-card-content { position: absolute; top: 40px; left: 40px; right: 40px; z-index: 10; color: #fff; }
+        .advantage-card-content h3 { font-size: 32px; margin-bottom: 20px; letter-spacing: 2px; font-weight: bold; }
+        .advantage-card-content p { font-size: 14px; line-height: 2; color: rgba(255, 255, 255, 0.95); }
+        .advantage-card-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 25px 40px; background: rgba(255, 255, 255, 0.98); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .advantage-card-footer a { color: #000; text-decoration: none; font-weight: bold; font-size: 14px; transition: color 0.3s; }
+        .advantage-card-footer a:hover { color: #60aeda; }
+        .advantage-card-footer svg { width: 24px; height: 24px; fill: #60aeda; transition: transform 0.3s; }
+        .advantage-card:hover .advantage-card-footer svg { transform: translateX(5px); }
+
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+
+        @media (max-width: 1200px) {
+            .banner-content { flex-direction: column; gap: 50px; }
+            .banner-text h1 { font-size: 48px; }
+            .bottom-features { gap: 50px; }
+            .advantages-grid { grid-template-columns: 1fr; }
+            .advantages-container { padding: 0 30px; }
+        }
+        @media (max-width: 768px) {
+            .header { padding: 12px 30px; height: 60px; }
+            .nav-menu { gap: 20px; }
+            .nav-menu a { font-size: 11px; }
+            .logo-svg { width: 40px; height: 40px; }
+            .logo-text { font-size: 10px; letter-spacing: 3px; }
+            .banner { padding: 120px 30px 30px; }
+            .banner-text h1 { font-size: 36px; letter-spacing: 6px; }
+            .bottom-features { flex-direction: column; gap: 20px; }
+            .advantages { padding: 60px 0; }
+            .advantage-card { height: 450px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== 开场动画层 ========== -->
+    <div id="introAnimation">
+        <canvas id="introCanvas"></canvas>
+        <div class="intro-logo" id="introLogo">
+            <svg class="intro-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <g transform="translate(50, 50)">
+                    <g transform="rotate(0)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(30) translate(0,-7)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(60)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(90)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(120)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(150)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(180)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(210)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(240)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(270)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(300)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(330)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                </g>
+            </svg>
+            <div class="intro-logo-text">YAVON</div>
+        </div>
+    </div>
+
+    <!-- ========== 主页面内容 ========== -->
+    <div class="header">
+        <div class="nav-menu">
+            <a href="#">品牌<span>ABOUT</span></a>
+            <a href="#">产品<span>PRODUCTS</span></a>
+            <a href="#">案例<span>PROJECTS</span></a>
+            <a href="#">理念<span>CONCEPT</span></a>
+            <a href="#">新闻<span>STORY</span></a>
+            <a href="#">联系<span>CONTACT</span></a>
+        </div>
+
+        <div class="logo">
+            <!-- 导航栏LOGO - 右上角Y沿着径向向外飞出 -->
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <g transform="translate(50, 50)">
+                    <g transform="rotate(0)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <!-- 右上角（30度）Y字母：先旋转30度指向1点钟方向，然后沿y轴负方向（径向向外）平移18个单位，最后自身再旋转25度 -->
+                    <g transform="rotate(20) translate(0, -14) rotate(18)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(60)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(90)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(120)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(150)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(180)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(210)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(240)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(270)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(300)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                    <g transform="rotate(330)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                </g>
+            </svg>
+            <div class="logo-text">YAVON</div>
+        </div>
+
+        <div class="header-icons">
+            <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+    </div>
+
+    <div class="banner">
+        <div class="banner-content">
+            <div class="banner-text">
+                <h1>SMART<br>GREEN<br>SOLUTION</h1>
+                <div class="subtitle">智能 · 绿色 · 未来</div>
+                <div class="line"></div>
+                <p>我们致力于通过创新科技和可持续发展<br>为世界创造更美好的未来</p>
+            </div>
+        </div>
+        <div class="bottom-features">
+            <div class="feature-item">
+                <svg viewBox="0 0 24 24"><path d="M17,8C8,10,5.9,16.17,3.82,21.34L5.71,22l1-2.3A4.49,4.49,0,0,0,8,20C19,20,22,3,22,3,21,5,14,5.25,9,6.25S2,11.5,2,13.5a6.22,6.22,0,0,0,1.75,3.75C7,8,17,8,17,8Z"/></svg>
+                <div><strong>可持续发展</strong><span>SUSTAINABLE</span></div>
+            </div>
+            <div class="feature-item">
+                <svg viewBox="0 0 24 24"><path d="M9,21c0,0.55.45,1,1,1h4c0.55,0,1-0.45,1-1v-1H9V21z M12,2C8.13,2,5,5.13,5,9c0,2.38,1.19,4.47,3,5.74V17 c0,0.55,0.45,1,1,1h6c0.55,0,1-0.45,1-1v-2.26c1.81-1.27,3-3.36,3-5.74C19,5.13,15.87,2,12,2z M14.85,15.29 C14.22,15.76,13.62,16,13,16v2h-2v-2c-0.62,0-1.22-0.24-1.85-0.71C8.13,14.54,7.5,13.5,7.5,12c0-2.48,2.02-4.5,4.5-4.5 s4.5,2.02,4.5,4.5C16.5,13.5,15.87,14.54,14.85,15.29z"/></svg>
+                <div><strong>创新科技</strong><span>INNOVATION</span></div>
+            </div>
+            <div class="feature-item">
+                <svg viewBox="0 0 24 24"><path d="M12,1L3,5v6c0,5.55,3.84,10.74,9,12c5.16-1.26,9-6.45,9-12V5L12,1z M12,11.99h7c-0.53,4.12-3.28,7.79-7,8.94V12H5V6.3 l7-3.11V11.99z"/></svg>
+                <div><strong>可靠品质</strong><span>RELIABLE</span></div>
+            </div>
+            <div class="feature-item">
+                <svg viewBox="0 0 24 24"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8 s8,3.59,8,8S16.41,20,12,20z M12.5,7H11v6l5.25,3.15l0.75-1.23l-4.5-2.67V7z"/></svg>
+                <div><strong>全球布局</strong><span>GLOBAL</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="advantages">
+        <div class="advantages-container">
+            <div class="section-header">
+                <h2>YAVON DESIGN</h2>
+                <h3>我们的优势</h3>
+                <p>雅风坚持使用环保的材料和可持续发展的理念；用先进技术，创造可重复利用的办公空间，积极探索零碳办公环境的未来。</p>
+            </div>
+            <div class="advantages-grid">
+                <div class="advantage-card">
+                    <div class="advantage-card-image" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=800');"></div>
+                    <div class="advantage-card-overlay"></div>
+                    <div class="advantage-card-content"><h3>SMART SYSTEM</h3><p>雅风集团业务涵盖办公家具/快装空间以及人力资源产业园，雅风集团坚持以人为本的服务理念，为客户提供高效率的办公环境，优质的人力资源服务，并通过智能办公系统极大提升办公效率。</p></div>
+                    <div class="advantage-card-footer"><a href="#">智能系统 SMART SYSTEM</a><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-card-image" style="background-image: url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800');"></div>
+                    <div class="advantage-card-overlay"></div>
+                    <div class="advantage-card-content"><h3>VR DESIGN</h3><p>雅风用云设计软件迅速为用户展示未来办公场景，结合服务世界500强企业经验为用户提供办公空间解决方案。</p></div>
+                    <div class="advantage-card-footer"><a href="#">VR全景 VR DESIGN</a><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-card-image" style="background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800');"></div>
+                    <div class="advantage-card-overlay"></div>
+                    <div class="advantage-card-content"><h3>FAST LOADING</h3><p>雅风全流程服务，可以节约企业大量的沟通成本及时间成本，整体装修工期7-15天，无需散味，实现快速入驻。</p></div>
+                    <div class="advantage-card-footer"><a href="#">快装 FAST LOADING</a><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-card-image" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=800');"></div>
+                    <div class="advantage-card-overlay"></div>
+                    <div class="advantage-card-content"><h3>MATERIAL</h3><p>雅风采用德国工业4.0生产理论，实现全车间滚动生产流转，实现板件不落地。并备有台面展架，便于通风透味。将真正健康，绿色产品交付给客户。</p></div>
+                    <div class="advantage-card-footer"><a href="#">环保 MATERIAL</a><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+                </div>
+                <div class="advantage-card">
+                    <div class="advantage-card-image" style="background-image: url('https://images.unsplash.com/photo-1565043589221-1a6fd9ae45f7?w=800');"></div>
+                    <div class="advantage-card-overlay"></div>
+                    <div class="advantage-card-content"><h3>FACTORY</h3><p>雅风工厂积累30年的生产管理经验,雅风打造德国豪迈的生产线，进行精益求精的生产。</p></div>
+                    <div class="advantage-card-footer"><a href="#">工厂 FACTORY</a><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 开场动画逻辑 ==========
+        (function() {
+            const canvas = document.getElementById('introCanvas');
+            const ctx = canvas.getContext('2d');
+            const introAnimation = document.getElementById('introAnimation');
+            const introLogo = document.getElementById('introLogo');
+            let width, height;
+            let particles = [];
+
+            function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class YParticle {
+                constructor() { this.reset(); this.x = width / 2 + (Math.random() - 0.5) * 100; this.y = height / 2 + (Math.random() - 0.5) * 100; }
+                reset() {
+                    this.x = Math.random() * width; this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.6; this.vy = (Math.random() - 0.5) * 0.6 - 0.15;
+                    this.angle = Math.random() * Math.PI * 2; this.spin = (Math.random() - 0.5) * 0.015;
+                    this.scale = 0.4 + Math.random() * 0.8; this.opacity = 0.15 + Math.random() * 0.45;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy; this.angle += this.spin;
+                    if (this.x < -40 || this.x > width + 40 || this.y < -40 || this.y > height + 40) {
+                        this.reset(); this.x = width / 2; this.y = height / 2;
+                    }
+                }
+                draw() {
+                    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.scale(this.scale, this.scale);
+                    ctx.globalAlpha = this.opacity; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, -24); ctx.moveTo(0, -24); ctx.lineTo(-5, -36); ctx.moveTo(0, -24); ctx.lineTo(5, -36); ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < 70; i++) particles.push(new YParticle());
+            function animate() { ctx.clearRect(0, 0, width, height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+            animate();
+
+            setTimeout(() => { introLogo.classList.add('show'); }, 2500);
+            setTimeout(() => { introAnimation.classList.add('hide'); }, 5000);
+        })();
+
+        // ========== 主页面逻辑 ==========
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) { header.style.background = 'rgba(0, 0, 0, 0.98)'; header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.3)'; }
+            else { header.style.background = 'rgba(0, 0, 0, 0.9)'; header.style.boxShadow = 'none'; }
+        });
+        window.addEventListener('load', () => { const banner = document.querySelector('.banner'); banner.style.minHeight = window.innerHeight + 'px'; });
+        window.addEventListener('resize', () => { const banner = document.querySelector('.banner'); banner.style.minHeight = window.innerHeight + 'px'; });
+    </script>
+</body>
+</html>
