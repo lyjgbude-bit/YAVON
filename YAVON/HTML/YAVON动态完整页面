@@ -1,134 +1,529 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>品牌雅风家具</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow-x: hidden; }
-        body { font-family: Arial, "Microsoft YaHei", sans-serif; background: #fff; color: #333; }
+        /* ----- 全局重置 ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            background: #fff;
+            color: #333;
+        }
 
-        /* ========== 开场动画层样式 ========== */
+        /* ----- 开场动画层 ----- */
         #introAnimation {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #050505; z-index: 9999;
-            transition: opacity 1s ease-out, visibility 1s;
-            display: flex; justify-content: center; align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.2s ease-out, visibility 1.2s ease-out;
         }
-        #introAnimation.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-        #introCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #introAnimation.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        #introCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ----- 开场 Logo（固定定位，便于飞行） ----- */
         .intro-logo {
-            position: relative; z-index: 10; text-align: center;
-            opacity: 0; transform: scale(0.85);
-            transition: all 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: fixed;
+            /* 初始居中，稍后通过 JS 计算精确位置 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            z-index: 10000;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            pointer-events: none;
+            /* 确保不会被点击干扰 */;
         }
-        .intro-logo.show { opacity: 1; transform: scale(1); }
-        .intro-logo-svg { width: 90px; height: 90px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.3)); }
-        .intro-logo-text { margin-top: 12px; color: #fff; font-size: 16px; letter-spacing: 6px; font-weight: 500; }
+        .intro-logo.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
 
-        /* ========== 导航栏样式 ========== */
+        /* 飞行状态 —— 由 JS 动态设置 transform，配合 transition 产生平滑动画 */
+        .intro-logo.flying {
+            transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 1.0s ease-out;
+            /* 贝塞尔曲线让飞行略带弹性 */;
+        }
+
+        .intro-logo-svg {
+            width: 90px;
+            height: 90px;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.25));
+            display: block;
+            margin: 0 auto;
+        }
+        .intro-logo-text {
+            margin-top: 12px;
+            color: #fff;
+            font-size: 16px;
+            letter-spacing: 6px;
+            font-weight: 500;
+        }
+
+        /* ----- 导航栏 ----- */
         .header {
-            position: fixed; top: 0; left: 0; right: 0; padding: 15px 60px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000; background: rgba(0, 0, 0, 0.9); transition: background 0.3s; height: 70px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            transition: background 0.3s, box-shadow 0.3s;
+            height: 70px;
+            opacity: 0;
+            /* 初始隐藏，过渡时淡入 */
+            transition: opacity 1.0s ease-out 0.2s, background 0.3s, box-shadow 0.3s;
         }
-        .nav-menu { display: flex; gap: 40px; }
+        .header.visible {
+            opacity: 1;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+        }
         .nav-menu a {
-            color: #fff; text-decoration: none; font-size: 13px; letter-spacing: 1px;
-            transition: color 0.3s; display: flex; flex-direction: column; align-items: center; gap: 3px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
         }
-        .nav-menu a span { font-size: 10px; color: #999; text-transform: uppercase; }
-        .nav-menu a:hover { color: #60aeda; }
-        .nav-menu a:hover span { color: #60aeda; }
+        .nav-menu a span {
+            font-size: 10px;
+            color: #999;
+            text-transform: uppercase;
+        }
+        .nav-menu a:hover {
+            color: #60aeda;
+        }
+        .nav-menu a:hover span {
+            color: #60aeda;
+        }
 
-        /* Logo - 调整位置和大小 */
+        /* ----- 导航栏中间 Logo（目标位置） ----- */
         .logo {
-            position: absolute; left: 50%; top: 50%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
             transform: translate(-50%, -50%);
-            text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            /* 初始隐藏，飞行到位后显示 */
+            transition: opacity 0.6s ease-out;
         }
-        .logo-svg { width: 50px; height: 50px; transition: transform 1s ease; }
-        .logo:hover .logo-svg { transform: rotate(30deg); }
-        .logo-text { margin-top: 5px; font-size: 12px; letter-spacing: 4px; font-weight: 500; color: #fff; }
+        .logo.reveal {
+            opacity: 1;
+        }
 
-        .header-icons { display: flex; gap: 20px; }
-        .header-icons svg { width: 18px; height: 18px; fill: #fff; cursor: pointer; transition: fill 0.3s; }
-        .header-icons svg:hover { fill: #60aeda; }
+        .logo-svg {
+            width: 50px;
+            height: 50px;
+            transition: transform 1s ease;
+            display: block;
+        }
+        .logo:hover .logo-svg {
+            transform: rotate(30deg);
+        }
+        .logo-text {
+            margin-top: 5px;
+            font-size: 12px;
+            letter-spacing: 4px;
+            font-weight: 500;
+            color: #fff;
+        }
 
-        /* Banner区域 */
+        .header-icons {
+            display: flex;
+            gap: 20px;
+        }
+        .header-icons svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+            cursor: pointer;
+            transition: fill 0.3s;
+        }
+        .header-icons svg:hover {
+            fill: #60aeda;
+        }
+
+        /* ----- Banner ----- */
         .banner {
-            position: relative; width: 100%; min-height: 100vh;
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
             background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            display: flex; align-items: center; justify-content: center; padding: 150px 60px 60px; overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 150px 60px 60px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 1.2s ease-out 0.5s;
         }
-        .banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1; }
-        .banner-content { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1600px; margin: 0 auto; gap: 100px; }
-        .banner-text { flex: 1; max-width: 700px; }
-        .banner-text h1 { font-size: 72px; font-weight: bold; letter-spacing: 12px; line-height: 1.3; color: #fff; margin-bottom: 30px; animation: fadeInLeft 1s ease-out; }
-        .banner-text .subtitle { font-size: 24px; letter-spacing: 10px; color: #60aeda; animation: fadeInLeft 1.5s ease-out; }
-        .banner-text .line { width: 80px; height: 3px; background: #60aeda; margin: 30px 0; animation: fadeInLeft 2s ease-out; }
-        .banner-text p { font-size: 16px; line-height: 2.2; color: rgba(255, 255, 255, 0.9); max-width: 600px; animation: fadeInLeft 2.5s ease-out; }
+        .banner.visible {
+            opacity: 1;
+        }
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+        .banner-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 100px;
+        }
+        .banner-text {
+            flex: 1;
+            max-width: 700px;
+        }
+        .banner-text h1 {
+            font-size: 72px;
+            font-weight: bold;
+            letter-spacing: 12px;
+            line-height: 1.3;
+            color: #fff;
+            margin-bottom: 30px;
+            animation: fadeInLeft 1s ease-out;
+        }
+        .banner-text .subtitle {
+            font-size: 24px;
+            letter-spacing: 10px;
+            color: #60aeda;
+            animation: fadeInLeft 1.5s ease-out;
+        }
+        .banner-text .line {
+            width: 80px;
+            height: 3px;
+            background: #60aeda;
+            margin: 30px 0;
+            animation: fadeInLeft 2s ease-out;
+        }
+        .banner-text p {
+            font-size: 16px;
+            line-height: 2.2;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            animation: fadeInLeft 2.5s ease-out;
+        }
 
-        .bottom-features { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; gap: 100px; z-index: 10; }
-        .feature-item { display: flex; align-items: center; gap: 15px; color: #fff; transition: transform 0.3s; }
-        .feature-item:hover { transform: translateY(-5px); }
-        .feature-item svg { width: 45px; height: 45px; fill: #60aeda; }
-        .feature-item div { display: flex; flex-direction: column; }
-        .feature-item strong { font-size: 16px; letter-spacing: 2px; margin-bottom: 3px; }
-        .feature-item span { color: rgba(255, 255, 255, 0.8); font-size: 12px; }
+        .bottom-features {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 100px;
+            z-index: 10;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #fff;
+            transition: transform 0.3s;
+        }
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+        .feature-item svg {
+            width: 45px;
+            height: 45px;
+            fill: #60aeda;
+        }
+        .feature-item div {
+            display: flex;
+            flex-direction: column;
+        }
+        .feature-item strong {
+            font-size: 16px;
+            letter-spacing: 2px;
+            margin-bottom: 3px;
+        }
+        .feature-item span {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+        }
 
-        .advantages { padding: 100px 0; background: #fff; width: 100%; }
-        .advantages-container { max-width: 1600px; margin: 0 auto; padding: 0 60px; }
-        .section-header { margin-bottom: 60px; max-width: 1000px; }
-        .section-header h2 { font-size: 36px; letter-spacing: 8px; margin-bottom: 15px; color: #000; }
-        .section-header h3 { font-size: 24px; color: #333; margin-bottom: 25px; }
-        .section-header p { font-size: 15px; line-height: 2; color: #666; max-width: 900px; }
-        .advantages-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; width: 100%; }
-        .advantage-card { position: relative; height: 550px; overflow: hidden; cursor: pointer; transition: transform 0.3s; border-radius: 8px; }
-        .advantage-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); }
-        .advantage-card-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: transform 0.5s; }
-        .advantage-card:hover .advantage-card-image { transform: scale(1.08); }
-        .advantage-card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); transition: background 0.3s; }
-        .advantage-card:hover .advantage-card-overlay { background: rgba(0, 0, 0, 0.5); }
-        .advantage-card-content { position: absolute; top: 40px; left: 40px; right: 40px; z-index: 10; color: #fff; }
-        .advantage-card-content h3 { font-size: 32px; margin-bottom: 20px; letter-spacing: 2px; font-weight: bold; }
-        .advantage-card-content p { font-size: 14px; line-height: 2; color: rgba(255, 255, 255, 0.95); }
-        .advantage-card-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 25px 40px; background: rgba(255, 255, 255, 0.98); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .advantage-card-footer a { color: #000; text-decoration: none; font-weight: bold; font-size: 14px; transition: color 0.3s; }
-        .advantage-card-footer a:hover { color: #60aeda; }
-        .advantage-card-footer svg { width: 24px; height: 24px; fill: #60aeda; transition: transform 0.3s; }
-        .advantage-card:hover .advantage-card-footer svg { transform: translateX(5px); }
+        /* ----- Advantages 区域 ----- */
+        .advantages {
+            padding: 100px 0;
+            background: #fff;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1.0s ease-out 0.8s, transform 1.0s ease-out 0.8s;
+        }
+        .advantages.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .advantages-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 60px;
+        }
+        .section-header {
+            margin-bottom: 60px;
+            max-width: 1000px;
+        }
+        .section-header h2 {
+            font-size: 36px;
+            letter-spacing: 8px;
+            margin-bottom: 15px;
+            color: #000;
+        }
+        .section-header h3 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .section-header p {
+            font-size: 15px;
+            line-height: 2;
+            color: #666;
+            max-width: 900px;
+        }
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            width: 100%;
+        }
+        .advantage-card {
+            position: relative;
+            height: 550px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border-radius: 8px;
+        }
+        .advantage-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .advantage-card-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.5s;
+        }
+        .advantage-card:hover .advantage-card-image {
+            transform: scale(1.08);
+        }
+        .advantage-card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.3s;
+        }
+        .advantage-card:hover .advantage-card-overlay {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .advantage-card-content {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            right: 40px;
+            z-index: 10;
+            color: #fff;
+        }
+        .advantage-card-content h3 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        .advantage-card-content p {
+            font-size: 14px;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.95);
+        }
+        .advantage-card-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 25px 40px;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        .advantage-card-footer a {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .advantage-card-footer a:hover {
+            color: #60aeda;
+        }
+        .advantage-card-footer svg {
+            width: 24px;
+            height: 24px;
+            fill: #60aeda;
+            transition: transform 0.3s;
+        }
+        .advantage-card:hover .advantage-card-footer svg {
+            transform: translateX(5px);
+        }
 
-        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        /* ----- 动画关键帧 ----- */
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
+        /* ----- 响应式 ----- */
         @media (max-width: 1200px) {
-            .banner-content { flex-direction: column; gap: 50px; }
-            .banner-text h1 { font-size: 48px; }
-            .bottom-features { gap: 50px; }
-            .advantages-grid { grid-template-columns: 1fr; }
-            .advantages-container { padding: 0 30px; }
+            .banner-content {
+                flex-direction: column;
+                gap: 50px;
+            }
+            .banner-text h1 {
+                font-size: 48px;
+            }
+            .bottom-features {
+                gap: 50px;
+            }
+            .advantages-grid {
+                grid-template-columns: 1fr;
+            }
+            .advantages-container {
+                padding: 0 30px;
+            }
         }
         @media (max-width: 768px) {
-            .header { padding: 12px 30px; height: 60px; }
-            .nav-menu { gap: 20px; }
-            .nav-menu a { font-size: 11px; }
-            .logo-svg { width: 40px; height: 40px; }
-            .logo-text { font-size: 10px; letter-spacing: 3px; }
-            .banner { padding: 120px 30px 30px; }
-            .banner-text h1 { font-size: 36px; letter-spacing: 6px; }
-            .bottom-features { flex-direction: column; gap: 20px; }
-            .advantages { padding: 60px 0; }
-            .advantage-card { height: 450px; }
+            .header {
+                padding: 12px 30px;
+                height: 60px;
+            }
+            .nav-menu {
+                gap: 20px;
+            }
+            .nav-menu a {
+                font-size: 11px;
+            }
+            .logo-svg {
+                width: 40px;
+                height: 40px;
+            }
+            .logo-text {
+                font-size: 10px;
+                letter-spacing: 3px;
+            }
+            .banner {
+                padding: 120px 30px 30px;
+            }
+            .banner-text h1 {
+                font-size: 36px;
+                letter-spacing: 6px;
+            }
+            .bottom-features {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .advantages {
+                padding: 60px 0;
+            }
+            .advantage-card {
+                height: 450px;
+            }
+            .intro-logo-svg {
+                width: 60px;
+                height: 60px;
+            }
+            .intro-logo-text {
+                font-size: 13px;
+                letter-spacing: 4px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- ========== 开场动画层 ========== -->
+
+    <!-- ========================================================= -->
+    <!-- 开场动画层 -->
+    <!-- ========================================================= -->
     <div id="introAnimation">
         <canvas id="introCanvas"></canvas>
+        <!-- 开场 Logo（独立 fixed 定位，便于飞行） -->
         <div class="intro-logo" id="introLogo">
             <svg class="intro-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <g transform="translate(50, 50)">
@@ -150,8 +545,11 @@
         </div>
     </div>
 
-    <!-- ========== 主页面内容 ========== -->
-    <div class="header">
+    <!-- ========================================================= -->
+    <!-- 主页面内容 -->
+    <!-- ========================================================= -->
+    <div class="header" id="mainHeader">
+        <!-- 左侧导航 -->
         <div class="nav-menu">
             <a href="#">品牌<span>ABOUT</span></a>
             <a href="#">产品<span>PRODUCTS</span></a>
@@ -161,12 +559,11 @@
             <a href="#">联系<span>CONTACT</span></a>
         </div>
 
-        <div class="logo">
-            <!-- 导航栏LOGO - 右上角Y沿着径向向外飞出 -->
+        <!-- 中间 Logo（目标位置） -->
+        <div class="logo" id="targetLogo">
             <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <g transform="translate(50, 50)">
                     <g transform="rotate(0)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
-                    <!-- 右上角（30度）Y字母：先旋转30度指向1点钟方向，然后沿y轴负方向（径向向外）平移18个单位，最后自身再旋转25度 -->
                     <g transform="rotate(20) translate(0, -14) rotate(18)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
                     <g transform="rotate(60)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
                     <g transform="rotate(90)"><path d="M0,-10 L0,-28 M0,-28 L-6,-40 M0,-28 L6,-40" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
@@ -183,6 +580,7 @@
             <div class="logo-text">YAVON</div>
         </div>
 
+        <!-- 右侧图标 -->
         <div class="header-icons">
             <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14z"/></svg>
             <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
@@ -190,13 +588,14 @@
         </div>
     </div>
 
-    <div class="banner">
+    <!-- Banner -->
+    <div class="banner" id="mainBanner">
         <div class="banner-content">
             <div class="banner-text">
-                <h1>SMART<br>GREEN<br>SOLUTION</h1>
+                <h1>SMART<br />GREEN<br />SOLUTION</h1>
                 <div class="subtitle">智能 · 绿色 · 未来</div>
                 <div class="line"></div>
-                <p>我们致力于通过创新科技和可持续发展<br>为世界创造更美好的未来</p>
+                <p>我们致力于通过创新科技和可持续发展<br />为世界创造更美好的未来</p>
             </div>
         </div>
         <div class="bottom-features">
@@ -219,7 +618,8 @@
         </div>
     </div>
 
-    <div class="advantages">
+    <!-- Advantages -->
+    <div class="advantages" id="mainAdvantages">
         <div class="advantages-container">
             <div class="section-header">
                 <h2>YAVON DESIGN</h2>
@@ -261,58 +661,195 @@
         </div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- JavaScript -->
+    <!-- ========================================================= -->
     <script>
-        // ========== 开场动画逻辑 ==========
         (function() {
+            'use strict';
+
+            // ----- 获取 DOM 引用 -----
+            const introAnim = document.getElementById('introAnimation');
+            const introLogo = document.getElementById('introLogo');
+            const targetLogo = document.getElementById('targetLogo');
+            const mainHeader = document.getElementById('mainHeader');
+            const mainBanner = document.getElementById('mainBanner');
+            const mainAdv = document.getElementById('mainAdvantages');
+
+            // ----- 粒子系统（开场背景） -----
             const canvas = document.getElementById('introCanvas');
             const ctx = canvas.getContext('2d');
-            const introAnimation = document.getElementById('introAnimation');
-            const introLogo = document.getElementById('introLogo');
-            let width, height;
+            let W, H;
             let particles = [];
 
-            function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-            window.addEventListener('resize', resize);
-            resize();
+            function resizeCanvas() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
 
             class YParticle {
-                constructor() { this.reset(); this.x = width / 2 + (Math.random() - 0.5) * 100; this.y = height / 2 + (Math.random() - 0.5) * 100; }
+                constructor() {
+                    this.reset();
+                    // 初始聚集在中心附近
+                    this.x = W / 2 + (Math.random() - 0.5) * 120;
+                    this.y = H / 2 + (Math.random() - 0.5) * 120;
+                }
                 reset() {
-                    this.x = Math.random() * width; this.y = Math.random() * height;
-                    this.vx = (Math.random() - 0.5) * 0.6; this.vy = (Math.random() - 0.5) * 0.6 - 0.15;
-                    this.angle = Math.random() * Math.PI * 2; this.spin = (Math.random() - 0.5) * 0.015;
-                    this.scale = 0.4 + Math.random() * 0.8; this.opacity = 0.15 + Math.random() * 0.45;
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = (Math.random() - 0.5) * 0.6 - 0.15;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spin = (Math.random() - 0.5) * 0.015;
+                    this.scale = 0.4 + Math.random() * 0.8;
+                    this.opacity = 0.15 + Math.random() * 0.45;
                 }
                 update() {
-                    this.x += this.vx; this.y += this.vy; this.angle += this.spin;
-                    if (this.x < -40 || this.x > width + 40 || this.y < -40 || this.y > height + 40) {
-                        this.reset(); this.x = width / 2; this.y = height / 2;
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.angle += this.spin;
+                    if (this.x < -40 || this.x > W + 40 || this.y < -40 || this.y > H + 40) {
+                        this.reset();
+                        this.x = W / 2;
+                        this.y = H / 2;
                     }
                 }
                 draw() {
-                    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.scale(this.scale, this.scale);
-                    ctx.globalAlpha = this.opacity; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-                    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, -24); ctx.moveTo(0, -24); ctx.lineTo(-5, -36); ctx.moveTo(0, -24); ctx.lineTo(5, -36); ctx.stroke();
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+                    ctx.scale(this.scale, this.scale);
+                    ctx.globalAlpha = this.opacity;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -8);
+                    ctx.lineTo(0, -24);
+                    ctx.moveTo(0, -24);
+                    ctx.lineTo(-5, -36);
+                    ctx.moveTo(0, -24);
+                    ctx.lineTo(5, -36);
+                    ctx.stroke();
                     ctx.restore();
                 }
             }
 
+            // 初始化粒子
             for (let i = 0; i < 70; i++) particles.push(new YParticle());
-            function animate() { ctx.clearRect(0, 0, width, height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
-            animate();
 
-            setTimeout(() => { introLogo.classList.add('show'); }, 2500);
-            setTimeout(() => { introAnimation.classList.add('hide'); }, 5000);
+            function animateParticles() {
+                ctx.clearRect(0, 0, W, H);
+                particles.forEach(p => { p.update();
+                    p.draw(); });
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+
+            // ----- 开场 Logo 显示 -----
+            setTimeout(() => {
+                introLogo.classList.add('show');
+            }, 800);
+
+            // ----- 飞行过渡核心逻辑 -----
+            // 等待开场动画播放完毕，然后触发飞行
+            const FLIGHT_DELAY = 3800; // 开场后等待 ms
+
+            setTimeout(() => {
+                // 1. 获取目标 Logo 的位置（导航栏中间）
+                const targetRect = targetLogo.getBoundingClientRect();
+                // 目标中心点（相对于视口）
+                const targetCX = targetRect.left + targetRect.width / 2;
+                const targetCY = targetRect.top + targetRect.height / 2;
+
+                // 2. 获取当前开场 Logo 的位置（它此刻在屏幕中心）
+                const logoRect = introLogo.getBoundingClientRect();
+                const startCX = logoRect.left + logoRect.width / 2;
+                const startCY = logoRect.top + logoRect.height / 2;
+
+                // 3. 计算位移量 (从中心到目标)
+                const deltaX = targetCX - startCX;
+                const deltaY = targetCY - startCY;
+
+                // 4. 缩放比例：目标大小 / 当前大小
+                // 当前开场 logo 宽 90px，目标 logo 宽 50px
+                const scaleRatio = 50 / 90;
+
+                // 5. 让开场 Logo 进入飞行状态
+                // 使用 translate + scale 组合变换
+                // 注意：当前 transform 是 translate(-50%, -50%) scale(1)
+                // 我们需要叠加位移和缩放
+                introLogo.classList.add('flying');
+
+                // 计算最终的 transform 值：
+                // 从中心偏移到目标位置，同时缩放
+                // 因为元素自身有 translate(-50%, -50%)，我们在此基础上再偏移
+                // 最终 transform: translate(calc(-50% + deltaX), calc(-50% + deltaY)) scale(scaleRatio)
+                // 但为了精确，我们直接用 translate(deltaX, deltaY) 叠加在现有 transform 上
+                // 由于我们无法直接读取当前 transform 的矩阵，我们采用更直接的方式：
+                // 用 JS 设置 transform 为最终值，让 CSS transition 驱动动画
+
+                // 获取当前元素的变换（初始为 translate(-50%, -50%) scale(1)）
+                // 我们直接设置最终变换
+                introLogo.style.transform =
+                    `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(${scaleRatio})`;
+
+                // 同时让 Logo 略微淡出（但保留可见性，方便观察飞行轨迹）
+                introLogo.style.opacity = '0.95';
+
+                // 6. 主页面元素渐入（导航栏、Banner、Advantages）
+                mainHeader.classList.add('visible');
+                mainBanner.classList.add('visible');
+                mainAdv.classList.add('visible');
+
+                // 7. 飞行结束后，显示目标 Logo，隐藏开场 Logo，隐藏开场层
+                const FLIGHT_DURATION = 1200; // 与 CSS transition 时长匹配
+                setTimeout(() => {
+                    // 显示目标 Logo
+                    targetLogo.classList.add('reveal');
+
+                    // 隐藏开场 Logo（完全淡出）
+                    introLogo.style.opacity = '0';
+                    introLogo.style.transition = 'opacity 0.4s ease-out';
+
+                    // 稍后隐藏整个开场层
+                    setTimeout(() => {
+                        introAnim.classList.add('hide');
+                        // 清理飞行状态
+                        introLogo.classList.remove('flying');
+                        introLogo.style.transform = '';
+                        introLogo.style.opacity = '';
+                        introLogo.style.transition = '';
+                    }, 500);
+
+                }, FLIGHT_DURATION);
+
+            }, FLIGHT_DELAY);
+
+            // ----- 滚动时导航栏效果 -----
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('.header');
+                if (window.scrollY > 100) {
+                    header.style.background = 'rgba(0, 0, 0, 0.98)';
+                    header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.3)';
+                } else {
+                    header.style.background = 'rgba(0, 0, 0, 0.9)';
+                    header.style.boxShadow = 'none';
+                }
+            });
+
+            // ----- Banner 高度自适应 -----
+            function setBannerHeight() {
+                const banner = document.querySelector('.banner');
+                if (banner) banner.style.minHeight = window.innerHeight + 'px';
+            }
+            window.addEventListener('load', setBannerHeight);
+            window.addEventListener('resize', setBannerHeight);
+
         })();
-
-        // ========== 主页面逻辑 ==========
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('.header');
-            if (window.scrollY > 100) { header.style.background = 'rgba(0, 0, 0, 0.98)'; header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.3)'; }
-            else { header.style.background = 'rgba(0, 0, 0, 0.9)'; header.style.boxShadow = 'none'; }
-        });
-        window.addEventListener('load', () => { const banner = document.querySelector('.banner'); banner.style.minHeight = window.innerHeight + 'px'; });
-        window.addEventListener('resize', () => { const banner = document.querySelector('.banner'); banner.style.minHeight = window.innerHeight + 'px'; });
     </script>
 </body>
 </html>
